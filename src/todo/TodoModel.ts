@@ -1,7 +1,7 @@
 import { TodoStatusEnum } from "./todoStatusEnum";
 import {v4 as uuidv4, v4} from 'uuid';
 
-export class TodoModal {
+export class TodoModel {
     public id : string =uuidv4()  ; 
     public name : string ; 
     public description : string ; 

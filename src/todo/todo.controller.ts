@@ -1,16 +1,27 @@
-import { Controller, Post, Get, Req, Body, Param, NotFoundException, Delete, Put } from '@nestjs/common';
-import { BaseExceptionFilter } from '@nestjs/core';
-import { throws } from 'assert';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
+import { addTodoDto } from './dto/addTodoDto';
+import { updateTodoDto } from './dto/updateTodoDto';
 
-import { TodoModal } from './TodoModel';
+import { TodoModel } from './TodoModel';
 
 @Controller('todo')
 export class TodoController {
-
   private todos = [];
-  find(id : string){
-    const founded=this.todos.find((el)=>el.id==id) ; 
-    return founded ; 
+  public findTodos(id: string) {
+    const founded = this.todos.find((el) => el.id == id);
+    return founded;
+  }
+  public findIndexTodos(id: string) {
+    const index = this.todos.findIndex((el) => el.id == id);
+    return index;
   }
   @Get()
   getTodos() {
@@ -18,43 +29,64 @@ export class TodoController {
   }
   @Post()
   addTodo(
-    @Body('name') name: string,
-    @Body('description') description: string,
+    @Body() body : addTodoDto
   ) {
-    const todoToAdd=new TodoModal() ; 
-    todoToAdd.name=name ; 
-    todoToAdd.description=description ; 
-    console.log(todoToAdd) ; 
+    const {name,description}=body ; 
+    if (!name || !description) {
+      return 'name or description is not set';
+    }
+    const todoToAdd = new TodoModel();
+    todoToAdd.name = name;
+    todoToAdd.description = description;
     this.todos.push(todoToAdd);
-    console.log(this.todos) ;  
-
-
-  } ; 
-  @Get(":id")
-  getTodo(@Param("id") id:string){
-    const todoFound=this.find(id) ; 
-    if(todoFound) {
-        return todoFound ;
-    }else{
-        return "not found" ;
+    return 'todo added';
+  }
+  @Get(':id')
+  getTodo(@Param('id') id: string) {
+    const todoFound = this.findTodos(id);
+    if (todoFound) {
+      return todoFound;
+    } else {
+      return 'not found';
     }
   }
-  @Delete(":id")
-  deleteTodo(@Param("id") id:string){
-    
-    let index : number ; 
-    index=this.todos.findIndex((el)=>{
-        return el.id==id ; 
-    }) 
-    if(index){
-        this.todos.splice(index,index) ; 
-    }else{
-        return "todo element not found" ; 
+  @Delete(':id')
+  deleteTodo(@Param('id') id: string) {
+    const index = this.findIndexTodos(id);
+    console.log(index) ;
+    if (index>=0) {
+      this.todos=this.todos.splice(index, index);
+      return `the todo element is deleated`;
+    } else {
+      return 'todo element not found,nothing deleated';
     }
   }
-  @Put(":id")
-  change(@Param("id") id:string ){
+  @Put(':id')
+  change(@Param('id') id: string, @Body() body : updateTodoDto) {
+    const todoFound = this.findTodos(id); 
+    if(todoFound){
+      const {name , description ,status} = body ;
+      let changes : string ="" ;  
+      if(name){
+        todoFound.name=name ;
+         changes="name changed "
+      }
+      if(description){
+        
+        todoFound.description=description ;
+        changes="description and "+changes ;
+        
+      }
+      if(status){
+        todoFound.status=status ; 
+        changes="status and "+changes ; 
+      }
+      return changes==""?"nothing changed":changes ; 
     
-  }
+      
 
+    }else{
+      return "todo is not found , nothing changed " ;
+    }
+  }
 }
