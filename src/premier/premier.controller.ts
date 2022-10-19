@@ -13,6 +13,7 @@ import {
 export class PremierController {
   @Get()
   find(@Req() request: Request) {
+    
     console.log(request.method);
     return request.method ; 
   }
